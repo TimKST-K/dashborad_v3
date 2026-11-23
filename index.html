@@ -265,6 +265,8 @@
     .tl-star.owner { color: #E61E3C; }
     .tl-star.joint { color: #EB691E; }
     .tl-star.po { color: #009B64; }
+    .tl-star.sm { position: static; display: inline-block; font-size: 22px; line-height: 1; filter: none; animation: none; }
+    .status-chip .ic { display: inline-flex; align-items: center; }
 
     /* Раскрывашка */
     .tl-details-cell {
@@ -452,7 +454,7 @@
       <div class="tl-legend">
         <span><span class="tl-mark owner sm">!</span> Этап на стороне владельца процесса</span>
         <span><span class="tl-mark joint sm">🤝</span> Совместная работа ПО и владельца</span>
-        <span><span class="star-icon" style="color:#009B64">★</span> Работа на стороне ПО</span>
+        <span><span class="tl-star po sm">★</span> Работа на стороне ПО</span>
         <span><span class="tl-check sm">✓</span> Этап завершён</span>
       </div>
     </div>
@@ -919,7 +921,10 @@
 
     const STAGE_NAMES = { analysis: 'Анализ', current_state: 'Текущее состояние', target_state: 'Целевое состояние',
       decision: 'Принятие решения', implementation: 'Внедрение изменений', deployed: 'Завершён' };
-    const ROLE_CHIPS = { owner: ['!', 'На стороне владельца процесса'], joint: ['🤝', 'Совместная работа ПО и владельца'], po: ['★', 'Работа на стороне ПО'] };
+    const ROLE_CHIPS = {
+      owner: ['<span class="tl-mark owner sm">!</span>', 'На стороне владельца процесса'],
+      joint: ['<span class="tl-mark joint sm">🤝</span>', 'Совместная работа ПО и владельца'],
+      po: ['<span class="tl-star po sm">★</span>', 'Работа на стороне ПО'] };
     function statusBlock(p) {
       const r = p.status_report || {};
       const st = String(p.status || '').trim().toLowerCase();
