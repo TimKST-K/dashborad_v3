@@ -510,37 +510,6 @@
       if (DEPLOYED_STATUSES.includes(st)) return 'badge-done';
       return 'badge-other';
     }
-
-    // Нормализация внедрения по кварталам: в одном квартале может быть несколько изменений с разными статусами
-    function qStatusOf(s) {
-      const t = String(s == null ? '' : s).trim().toLowerCase();
-      if (!t) return null;
-      if (DEPLOYED_STATUSES.includes(t)) return 'завершён';
-      return t;
-    }
-    function qChangeList(v, dflt) {
-      if (v == null || v === '') return [];
-      if (typeof v === 'string' || typeof v === 'number') return [{ text: String(v), status: qStatusOf(dflt) }];
-      if (Array.isArray(v)) return v.flatMap(e => qChangeList(e, dflt));
-      const st = v.status != null && v.status !== '' ? v.status : dflt;
-      const nested = Array.isArray(v.changes) ? v.changes : (Array.isArray(v.items) ? v.items : null);
-      if (nested) return qChangeList(nested, st);
-      const text = v.name || v.title || v.text || v.change || v.item || v.description || '';
-      return text ? [{ text: String(text), status: qStatusOf(st) }] : [];
-    }
-    function normQuarters(p) {
-      const src = (p.stages && p.stages.implementation && p.stages.implementation.quarters) || {};
-      const map = {};
-      if (Array.isArray(src)) {
-        src.forEach(e => {
-          if (!e || typeof e !== 'object') return;
-          const key = e.quarter || e.key || e.period;
-          if (!key) return;
-          (map[key] = map[key] || []).push(e);
-        });
-      } else Object.keys(src).forEach(key => { map[key] = src[key]; });
-      return Object.keys(map).sort().map(key => ({ key, changes: qChangeList(map[key]) }));
-    }
     function qLabel(key) {
       const m = String(key).match(/^(\d{4})[-_ ]?Q([1-4])$/i);
       return m ? `Q${m[2]} ’${m[1].slice(2)}` : String(key);
@@ -812,7 +781,6 @@
         return states;
       }
 
-      const QMARK = { done: '✓', current: '★', todo: '○' };
       function mapQStatus(s) {
         if (s === 'завершён') return 'done';
         if (s === 'в работе') return 'current';
@@ -820,24 +788,26 @@
         return null;
       }
       function getQuarters(p, implState) {
-        const list = normQuarters(p).map(q => {
-          const ch = q.changes.map(c => ({ text: c.text, status: mapQStatus(c.status) }));
-          const sts = ch.map(c => c.status).filter(Boolean);
-          const status = sts.includes('current') ? 'current' : (sts.includes('todo') ? 'todo' : (sts.length ? 'done' : null));
-          return { key: q.key, label: qLabel(q.key), items: ch.map(c => c.text), changes: ch, status };
+        const q = (p.stages && p.stages.implementation && p.stages.implementation.quarters) || {};
+        const list = Object.keys(q).sort().map(k => {
+          const v = q[k];
+          const items = Array.isArray(v) ? v : ((v && v.items) || []);
+          const changes = (!Array.isArray(v) && v && Array.isArray(v.changes) && v.changes.length)
+            ? v.changes.map(c => ({ text: c.text, status: mapQStatus(c.status) }))
+            : items.map(t => ({ text: t, status: null }));
+          return { key: k, label: qLabel(k), items, changes, status: Array.isArray(v) ? null : mapQStatus(v && v.status) };
         });
         if (!list.length) return list;
-        if (isDeployed(p)) { list.forEach(x => { x.status = 'done'; x.changes.forEach(c => { c.status = 'done'; }); }); return list; }
-        list.forEach((x, i) => {
-          if (!x.status) x.status = (implState === 'current' && i === list.length - 1) ? 'current' : 'done';
-          x.changes.forEach(c => { if (!c.status) c.status = x.status; });
-        });
+        if (isDeployed(p)) { list.forEach(x => x.status = 'done'); return list; }
+        list.forEach((x, i) => { if (!x.status) x.status = (implState === 'current' && i === list.length - 1) ? 'current' : 'done'; });
         if (implState === 'current' && !list.some(x => x.status === 'current')) {
           const t = list.find(x => x.status === 'todo');
           (t || list[list.length - 1]).status = 'current';
         }
         return list;
       }
+
+      const chSt = (p, c, x) => (c.status && !isDeployed(p)) ? c.status : x.status;
 
       container.innerHTML = data.map(p => {
         const states = getStageStates(p);
@@ -870,9 +840,10 @@
                 const cls = 'tl-q' + (si > 0 && si % 4 === 0 ? ' ys' : '');
                 if (!x || (starSlot >= 0 && si > starSlot)) return `<div class="${cls}"></div>`;
                 const mk = x.status === 'current' ? marker : (x.status === 'done' ? doneMark('Этап завершён') : dot('planned'));
-                const note = x.items.join(', ');
-                const tip = x.changes.map(c => (QMARK[c.status] || '✓') + ' ' + c.text).join('; ');
-                return `<div class="${cls}" title="${esc(x.label + (tip ? ': ' + tip : ''))}">${mk}${note ? `<div class="tl-q-label">${esc(note)}</div>` : ''}</div>`;
+                const sym = { done: '✓', current: '★', todo: '○' };
+                const lines = x.changes.map(c => (x.changes.length > 1 ? (sym[chSt(p, c, x)] || '✓') + ' ' : '') + c.text);
+                const note = x.changes.length > 1 ? `${x.changes[0].text} (+${x.changes.length - 1})` : (x.changes[0] ? x.changes[0].text : '');
+                return `<div class="${cls}" title="${esc(x.label + (lines.length ? ':\n' + lines.join('\n') : ''))}">${mk}${note ? `<div class="tl-q-label">${esc(note)}</div>` : ''}</div>`;
               }).join('') + `</div>`;
               if (state === 'current') starSeen = true;
             } else if (state === 'current') {
@@ -925,9 +896,9 @@
                       const qs = getQuarters(p, states[4]);
                       if (!qs.length) return '<div style="color:var(--text-muted); font-size:13px;">Данные по кварталам пока отсутствуют</div>';
                       const mark = { done: '✓', current: '★', todo: '○' };
-                      return qs.map(x => x.changes.length > 1
-                        ? `<div class="q-item"><strong>${esc(x.label)}:</strong>${x.changes.map(c => `<div style="margin-left:12px;"><strong>${mark[c.status] || '✓'}</strong> <span>${esc(c.text)}</span></div>`).join('')}</div>`
-                        : `<div class="q-item"><strong>${mark[x.status] || '✓'} ${esc(x.label)}:</strong> <span>${esc(x.items.join(', ') || '—')}</span></div>`).join('');
+                      return qs.map(x => x.changes.length
+                        ? `<div class="q-item"><strong>${esc(x.label)}:</strong>` + x.changes.map(c => `<div>${mark[chSt(p, c, x)] || '✓'} ${esc(c.text)}</div>`).join('') + `</div>`
+                        : `<div class="q-item"><strong>${mark[x.status] || '✓'} ${esc(x.label)}:</strong> <span>—</span></div>`).join('');
                     })()}
                   </div>
                 </div>
@@ -1047,7 +1018,8 @@
     }
 
     function renderTimeline(data) {
-      const years = data.flatMap(p => normQuarters(p).map(q => { const m = String(q.key).match(/^(\d{4})/); return m ? +m[1] : null; }).filter(Boolean));
+      const years = data.flatMap(p => Object.keys((p.stages && p.stages.implementation && p.stages.implementation.quarters) || {})
+        .map(k => { const m = String(k).match(/^(\d{4})/); return m ? +m[1] : null; }).filter(Boolean));
       const minY = Math.min(2024, ...years), maxY = Math.max(2026, ...years);
       TL_YEARS = []; for (let y = minY; y <= maxY; y++) TL_YEARS.push(y);
 
