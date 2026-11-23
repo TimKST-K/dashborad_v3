@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Процессный офис НИУ ВШЭ</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ===== ФИРМЕННЫЙ ШРИФТ Brand (Regular / Italic / Black) =====
+       Файлы: fonts/Brand-Regular.otf, fonts/Brand-Italic.otf, fonts/Brand-Black.otf.
+       Если файлов нет, страница использует обычные шрифты и прежнюю жирность текста (класс brand-fonts не добавляется). */
+    @font-face { font-family: 'Brand'; font-style: normal; font-weight: 400; font-display: swap;
+      src: url('fonts/Brand-Regular.otf') format('opentype'),
+           url('fonts/fonts%3ABrand-Regular.otf') format('opentype'),
+           url('fonts%3ABrand-Regular.otf') format('opentype'); }
+    @font-face { font-family: 'Brand'; font-style: italic; font-weight: 400; font-display: swap;
+      src: url('fonts/Brand-Italic.otf') format('opentype'),
+           url('fonts/fonts%3ABrand-Italic.otf') format('opentype'),
+           url('fonts%3ABrand-Italic.otf') format('opentype'); }
+    @font-face { font-family: 'Brand'; font-style: normal; font-weight: 900; font-display: swap;
+      src: url('fonts/Brand-Black.otf') format('opentype'),
+           url('fonts/fonts%3ABrand-Black.otf') format('opentype'),
+           url('fonts%3ABrand-Black.otf') format('opentype'); }
+
+    /* ===== БАЗА И ПЕРЕМЕННЫЕ ===== */
+    :root {
+      --bg: #F2F2F2;
+      --surface: #FFFFFF;
+      --text-main: #1A1A1A;
+      --text-muted: #666666;
+      --border: #E6E6E6;
+      --primary: #234B9B;
+      --primary-hover: #0F2D69;
+      --accent-green: #009B64;
+      --accent-rose: #E61E3C;
+      --accent-blue: #0F2D69;
+      --accent-orange: #EB691E;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Brand', 'Inter', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text-main);
+      padding: 24px;
+    }
+    @media (max-width: 600px) { body { padding: 12px; } }
+
+    /* ===== ШАПКА ===== */
+    .header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;}
+    .header h1 { font-size: 24px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
+    .header .subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .header .date { font-size: 12px; color: var(--text-muted); }
+
+    /* ===== СЕКЦИИ ===== */
+    .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; margin-top: 32px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+    .section-title span { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+
+    /* ===== ГЛОБАЛЬНЫЕ KPI ===== */
+    .kpi-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-bottom: 24px; }
+    .kpi-grid > .kpi-card { grid-column: span 3; }
+    .kpi-grid > .kpi-card.k5 { grid-column: span 5; }
+    .kpi-grid > .kpi-card.k7 { grid-column: span 7; }
+    @media (max-width: 1000px) { .kpi-grid > .kpi-card, .kpi-grid > .kpi-card.k5, .kpi-grid > .kpi-card.k7 { grid-column: span 6; } }
+    @media (max-width: 560px) { .kpi-grid > .kpi-card, .kpi-grid > .kpi-card.k5, .kpi-grid > .kpi-card.k7 { grid-column: span 12; } }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { background: #EDEDED; border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: 13px; color: var(--text-main); line-height: 1.4; }
+    .kpi-card .chips { margin-top: 2px; }
+    .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); opacity: 0.8; }
+    .kpi-card.green::before { background: var(--accent-green); }
+    .kpi-card.blue::before { background: var(--accent-blue); }
+    .kpi-card.orange::before { background: var(--accent-orange); }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 8px; }
+    .kpi-card .value { font-size: 32px; font-weight: 700; color: var(--text-main); line-height: 1; }
+    .kpi-card .sub { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+    /* ===== АККОРДЕОН (Направления) ===== */
+    .accordion-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+    .accordion-table { width: 100%; border-collapse: collapse; }
+    .accordion-table th { text-align: left; padding: 12px 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); background: #F6F6F6; border-bottom: 1px solid var(--border); letter-spacing: 0.5px; }
+    .accordion-table td { padding: 16px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .acc-row { transition: background 0.2s; cursor: pointer; }
+    .acc-row:hover { background: #F6F6F6; }
+    .acc-row.open { background: #F6F6F6; border-bottom: none; }
+    .acc-title { font-weight: 600; font-size: 14px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+    .acc-title .arrow { font-size: 10px; color: #929292; transition: transform 0.3s; }
+    .acc-row.open .arrow { transform: rotate(90deg); }
+    .details-row { display: none; background: #FFFFFF; }
+    .acc-row.open + .details-row { display: table-row; }
+    .details-cell { padding: 0 20px 20px 20px; border-bottom: 1px solid var(--border); }
+    .details-container { background: #F6F6F6; border: 1px solid var(--border); border-radius: 8px; padding: 20px; animation: slideDown 0.3s ease-out; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .dir-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .dir-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; gap: 16px; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .dir-icon { width: 40px; height: 40px; border-radius: 10px; background: #E6ECF7; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .dir-card.green .dir-icon { background: #DDF2EA; color: var(--accent-green); }
+    .dir-card.orange .dir-icon { background: #FCE9DD; color: var(--accent-orange); }
+    .dir-card.rose .dir-icon { background: #FCDDE2; color: var(--accent-rose); }
+    .dir-content h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; color: var(--text-muted); }
+    .dir-content .val { font-size: 22px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+    .dir-content p { font-size: 11px; color: var(--text-muted); }
+
+    .optimization-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+    @media (max-width: 768px) { .optimization-layout { grid-template-columns: 1fr; } }
+    .opt-totals { display: flex; flex-direction: column; gap: 16px; }
+    .opt-total-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 24px 20px; display: flex; align-items: center; gap: 16px; flex: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .opt-total-card .dir-icon { width: 48px; height: 48px; font-size: 24px; }
+    .opt-total-card .dir-content h4 { font-size: 14px; }
+    .opt-total-card .dir-content .val { font-size: 32px; margin-bottom: 4px; }
+    .opt-artifacts { display: flex; flex-direction: column; }
+    .artifacts-title { font-weight: 600; font-size: 13px; color: var(--text-main); margin-bottom: 12px; }
+    .artifacts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; flex: 1; }
+    .artifact-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px 12px; display: flex; flex-direction: column; justify-content: center; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .artifact-card .val { font-size: 24px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .artifact-card h4 { font-size: 11px; font-weight: 600; color: var(--text-muted); line-height: 1.3; }
+
+    /* ===== ГРАФИКИ ===== */
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); }
+    .chart-card h3 { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 16px; }
+    .chart-wrap { position: relative; width: 100%; height: 240px; }
+
+    /* ===== ТАЙМЛАЙН: описание + 4 этапа + внедрение по годам/кварталам + «Завершён» ===== */
+    .timeline-container {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden;
+    }
+    .tl-scroll { overflow-x: auto; }
+    
+    /* Сетка: Название + Описание + 4 этапа + Внедрение (по годам и кварталам) + Завершён */
+    .tl-grid {
+      display: grid;
+      --yrs: 3;
+      grid-template-columns: 186px minmax(170px, 1.2fr) repeat(4, minmax(90px, 1fr)) minmax(calc(var(--yrs) * 205px), 5fr) minmax(90px, 1fr);
+      min-width: calc(806px + var(--yrs) * 205px);
+    }
+
+    /* Шапка */
+    .tl-header-cell {
+      padding: 20px 16px; text-align: center; border-bottom: 2px solid var(--border); border-right: 1px solid var(--border);
+      background: #F6F6F6; display: flex; flex-direction: column; justify-content: center;
+    }
+    .tl-header-cell:last-child { border-right: none; }
+    .tl-header-cell.title { text-align: left; padding-left: 20px; font-weight: 600; font-size: 14px; }
+    .tl-header-cell h4 { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+    .tl-header-cell p { font-size: 11px; color: var(--text-muted); }
+
+    /* Строки */
+    .tl-row-wrapper { display: contents; cursor: pointer; }
+    .tl-row-wrapper:hover .tl-name-cell, 
+    .tl-row-wrapper:hover .tl-track-cell { background: #F6F6F6; }
+    
+    .tl-name-cell {
+      padding: 20px; font-weight: 600; font-size: 14px; color: var(--text-main);
+      border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+      display: flex; align-items: center; transition: background 0.2s;
+    }
+    
+    .tl-track-cell {
+      border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+      position: relative; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; min-height: 100px;
+    }
+    .tl-track-cell.last { border-right: none; }
+
+    /* Линия */
+    .tl-line {
+      position: absolute; top: 50%; left: 0; width: 100%; height: 4px;
+      background: #0FA0D7; transform: translateY(-50%); z-index: 1;
+    }
+    
+    /* Точки */
+    .tl-dot {
+      width: 14px; height: 14px; border-radius: 50%; background: #0FA0D7;
+      position: relative; z-index: 2; border: 2px solid var(--surface);
+      box-shadow: 0 0 0 1px #234B9B;
+    }
+    .tl-dot.done { background: #0F2D69; box-shadow: 0 0 0 1px #0F2D69; }
+    .tl-dot.planned { background: #fff; border: 2px solid #234B9B; box-shadow: none; }
+
+    .tl-mark { position: relative; z-index: 3; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      line-height: 1; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .tl-mark.owner { background: #E61E3C; color: #fff; font-size: 22px; box-shadow: 0 2px 6px rgba(230,30,60,0.35); }
+    .tl-mark.joint { background: #fff; border: 2px solid #EB691E; font-size: 17px; box-shadow: 0 2px 6px rgba(235,105,30,0.30); }
+    .tl-mark.sm { width: 20px; height: 20px; font-size: 13px; animation: none; box-shadow: none; display: inline-flex; vertical-align: middle; }
+    .tl-mark.joint.sm { font-size: 11px; border-width: 1.5px; }
+    .tl-check.sm { width: 22px; height: 22px; line-height: 22px; font-size: 14px; border-radius: 5px; box-shadow: none; }
+
+    .tl-name-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+    .tl-name-wrap .badge { white-space: nowrap; }
+
+    .tl-name-cell, .tl-header-cell.title { position: sticky; left: 0; z-index: 5; box-shadow: 2px 0 4px -2px rgba(15,23,42,0.12); }
+    .tl-name-cell { background: var(--surface); }
+
+    .tl-desc-cell { padding: 12px 14px; font-size: 12px; color: var(--text-muted); line-height: 1.45; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); display: flex; align-items: center; transition: background 0.2s; }
+    .tl-desc-cell span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .tl-row-wrapper:hover .tl-desc-cell { background: #F6F6F6; }
+
+    .tl-header-cell.impl-head { padding: 12px 0 0; justify-content: flex-start; align-items: stretch; }
+    .impl-head h4 { padding: 0 8px; text-align: center; }
+    .impl-years { display: grid; grid-template-columns: repeat(var(--yrs), 1fr); margin-top: 8px; border-top: 1px solid var(--border); flex: 1; }
+    .impl-yr { text-align: center; border-left: 1px solid var(--border); }
+    .impl-yr:first-child { border-left: none; }
+    .impl-yr b { display: block; font-size: 12px; padding: 4px 0; color: var(--text-main); background: #E6ECF7; }
+    .impl-qs { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .impl-qs span { font-size: 10px; color: var(--text-muted); padding: 3px 0; border-left: 1px dashed var(--border); }
+    .impl-qs span:first-child { border-left: none; }
+
+    .tl-q-wrap { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(calc(var(--yrs) * 4), 1fr); width: 100%; align-self: stretch; }
+    .tl-q { position: relative; min-width: 0; display: flex; align-items: center; justify-content: center; }
+    .tl-q + .tl-q { border-left: 1px dashed var(--border); }
+    .tl-q.ys { border-left: 1px solid var(--border); }
+    .tl-q-label { position: absolute; top: calc(50% + 22px); left: 1px; right: 1px; text-align: center; font-size: 10px; line-height: 1.2; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+    .tl-check {
+      position: relative; z-index: 3; width: 26px; height: 26px; border-radius: 6px;
+      background: #009B64; color: #fff; font-size: 16px; line-height: 26px; text-align: center;
+      box-shadow: 0 2px 6px rgba(16,185,129,0.4);
+    }
+
+    .tl-details-cell .details-container { position: sticky; left: 20px; width: calc(var(--tl-vw, 100%) - 40px); max-width: 100%; }
+
+    @media (max-width: 1440px) {
+      .tl-grid {
+        grid-template-columns: 150px minmax(130px, 1fr) repeat(4, minmax(72px, 1fr)) minmax(calc(var(--yrs) * 150px), 5fr) minmax(72px, 1fr);
+        min-width: calc(640px + var(--yrs) * 150px);
+      }
+      .tl-header-cell { padding: 12px 6px; }
+      .tl-header-cell h4 { font-size: 12px; }
+      .tl-header-cell p { font-size: 10px; }
+      .tl-header-cell.title { padding-left: 12px; font-size: 13px; }
+      .tl-header-cell.impl-head { padding: 12px 0 0; }
+      .impl-yr b { font-size: 11px; }
+      .impl-qs span { font-size: 9px; }
+      .tl-name-cell { padding: 12px; font-size: 13px; }
+      .tl-desc-cell { padding: 10px 10px; font-size: 11px; }
+      .tl-track-cell { min-height: 92px; }
+      .tl-q-label { display: none; }
+      .tl-star { font-size: 34px; }
+      .tl-mark { width: 28px; height: 28px; }
+      .tl-mark.owner { font-size: 19px; }
+      .tl-mark.joint { font-size: 15px; }
+      .tl-mark.sm { width: 20px; height: 20px; }
+      .res-table { min-width: 1080px; font-size: 12px; }
+      .res-table th, .res-table td { padding: 10px 10px; }
+    }
+    
+    /* Звезды */
+    .tl-star {
+      position: absolute; z-index: 3; font-size: 40px; line-height: 1;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    .tl-star.owner { color: #E61E3C; }
+    .tl-star.joint { color: #EB691E; }
+    .tl-star.po { color: #009B64; }
+
+    /* Раскрывашка */
+    .tl-details-cell {
+      grid-column: 1 / -1; display: none; background: #FFFFFF;
+      border-bottom: 1px solid var(--border); padding: 0 20px 20px 20px;
+    }
+    .tl-row-wrapper.open .tl-details-cell { display: block; cursor: text; user-select: text; -webkit-user-select: text; }
+    
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-done { background: #DDF2EA; color: #006B45; border: 1px solid #A6DBC8; }
+    .badge-wip { background: #E6ECF7; color: #0F2D69; border: 1px solid #B9C8E6; }
+    .badge-pause { background: #FFF1C2; color: #7A5600; border: 1px solid #F7D774; }
+    .badge-other { background: #EDEDED; color: #4D4D4D; border: 1px solid #E6E6E6; }
+
+    .info-list { display: flex; flex-direction: column; gap: 10px; }
+    .info-item { font-size: 13px; color: var(--text-muted); }
+    .info-item strong { color: var(--text-main); font-weight: 600; display: inline-block; min-width: 110px; }
+    
+    .tl-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 14px 20px; font-size: 12px; color: var(--text-muted); background: #fff; position: relative; }
+    .tl-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+    .tl-legend .tl-check.sm { position: static; width: 20px; height: 20px; line-height: 20px; font-size: 13px; }
+
+    /* ===== НАПРАВЛЕНИЯ ДЕЯТЕЛЬНОСТИ ===== */
+    .dir-sections { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
+    .dir-block { grid-column: span 2; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .dir-block.s3 { grid-column: span 3; }
+    .dir-block.s4 { grid-column: span 4; }
+    .dir-block.wide { grid-column: 1 / -1; }
+    @media (max-width: 1100px) { .dir-sections { grid-template-columns: repeat(2, 1fr); } .dir-block, .dir-block.s3, .dir-block.s4 { grid-column: auto; } .dir-block.wide { grid-column: 1 / -1; } }
+    @media (max-width: 700px) { .dir-sections { grid-template-columns: 1fr; } .dir-block.wide { grid-column: auto; } }
+    .dir-head { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+    .dir-head .dir-icon { width: 36px; height: 36px; font-size: 18px; }
+    .dir-head.green .dir-icon { background: #DDF2EA; color: var(--accent-green); }
+    .dir-head.orange .dir-icon { background: #FCE9DD; color: var(--accent-orange); }
+    .dir-head.indigo .dir-icon { background: #E6ECF7; color: var(--accent-blue); }
+    .dir-head.rose .dir-icon { background: #FCDDE2; color: var(--accent-rose); }
+    .dir-head h3 { font-size: 15px; color: var(--text-main); line-height: 1.3; }
+    .dir-head p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .dir-block .dir-cards-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+    .dir-block .dir-card, .dir-block .opt-total-card, .dir-block .artifact-card { background: #F6F6F6; box-shadow: none; }
+    .dir-block .optimization-layout { grid-template-columns: minmax(240px, 1fr) 3fr; gap: 16px 24px; align-items: stretch; }
+    @media (max-width: 900px) { .dir-block .optimization-layout { grid-template-columns: 1fr; } }
+    .dir-block .opt-left { display: flex; flex-direction: column; }
+    .dir-block .opt-totals { gap: 12px; flex: 1; }
+    .dir-block .opt-total-card { padding: 14px 16px; flex: 1; }
+    .dir-block .opt-total-card .dir-icon { width: 40px; height: 40px; font-size: 20px; }
+    .dir-block .opt-total-card .dir-content .val { font-size: 26px; margin-bottom: 2px; }
+    .dir-block .artifacts-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 600px) { .dir-block .artifacts-grid { grid-template-columns: repeat(2, 1fr); } }
+    .dir-block .artifact-card { padding: 14px 12px; min-height: 111px; }
+    .dir-block .artifact-card .val { font-size: 22px; margin-bottom: 2px; }
+    .dir-block .artifact-card h4 { font-size: 11px; }
+    .dir-sub-title { font-size: 13px; color: var(--text-main); margin-bottom: 12px; }
+    .tl-legend span { display: flex; align-items: center; gap: 6px; }
+    .star-icon { font-size: 16px; }
+
+    /* ===== НАЧЕРТАНИЯ ФИРМЕННОГО ШРИФТА (включаются, только если шрифт реально загрузился) ===== */
+    html.brand-fonts * { font-weight: 400 !important; }
+    html.brand-fonts .site-header h1, html.brand-fonts .part-title, html.brand-fonts .section-title,
+    html.brand-fonts .kpi-card .value, html.brand-fonts .dir-block .val, html.brand-fonts .opt-total-card .val,
+    html.brand-fonts .artifact-card .val, html.brand-fonts .dir-head h3, html.brand-fonts .tl-header-cell h4,
+    html.brand-fonts .impl-yr b, html.brand-fonts .tab-btn.active, html.brand-fonts .tl-mark.owner,
+    html.brand-fonts .res-table thead th, html.brand-fonts .status-head h4, html.brand-fonts .status-sec h5 { font-weight: 900 !important; }
+    html.brand-fonts .section-title span, html.brand-fonts .part-title span, html.brand-fonts .kpi-card .sub,
+    html.brand-fonts .dir-head p, html.brand-fonts .dir-content p, html.brand-fonts .tl-header-cell p,
+    html.brand-fonts .res-table thead th small, html.brand-fonts .site-header .subtitle { font-style: italic; }
+    .tl-name-cell { font-size: 14px; }
+
+    /* ===== ЧАСТИ ДАШБОРДА (вкладки) ===== */
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .tab-btn { appearance: none; border: 1px solid var(--border); background: #fff; color: #0F2D69; font: inherit; font-size: 14px;
+      padding: 10px 20px; border-radius: 10px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+    .tab-btn:hover { background: #E6ECF7; }
+    .tab-btn.active { background: #0F2D69; border-color: #0F2D69; color: #fff; }
+    .tab-btn:focus-visible { outline: 2px solid #0FA0D7; outline-offset: 2px; }
+    .tab-panel[hidden] { display: none; }
+    .part-title { font-size: 20px; margin: 0 0 4px; color: #0F2D69; letter-spacing: -0.3px; }
+    .part-title span { font-size: 13px; color: var(--text-muted); margin-left: 8px; }
+    .tab-panel > .section-title:first-of-type { margin-top: 16px; }
+
+    /* ===== ФИРМЕННАЯ ПАЛИТРА =====
+       Основные: тёмно-синий #0F2D69, синий #234B9B; серые #929292 / #C6C6C6 / #E6E6E6.
+       Дополнительные (насыщенные): голубой #0FA0D7, зелёный #009B64, оранжевый #EB691E, жёлтый #FAB900, красный #E61E3C. */
+    .section-title, .dir-head h3, .tl-header-cell h4, .kpi-card .value, .dir-block .val,
+    .opt-total-card .val, .artifact-card .val, .impl-yr b { color: #0F2D69; }
+
+    /* ===== ОФОРМЛЕНИЕ: фон, шапка с логотипом и паттерном, подвал ===== */
+    :root { --bg: #E4E8F0; --border: #D6DAE3; --shadow-sm: 0 1px 3px rgba(15,45,105,0.10); --shadow-md: 0 4px 12px rgba(15,45,105,0.14); }
+    body { background: var(--bg); }
+
+    .site-header { position: relative; margin: -24px -24px 24px; background: #0F2D69; color: #fff; overflow: hidden; border-bottom: 3px solid #0FA0D7; }
+    .site-header-inner { position: relative; z-index: 1; display: flex; align-items: center; gap: 18px; padding: 18px 24px; }
+    .site-logo { width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px #fff, 0 2px 8px rgba(0,0,0,0.25); }
+    .site-titles { min-width: 0; }
+    .site-header h1 { margin: 0; font-size: 24px; line-height: 1.2; letter-spacing: -0.4px; color: #fff; }
+    .site-header .org-sub { margin: 4px 0 0; font-size: 16px; line-height: 1.25; color: #fff; }
+    .site-header .subtitle { margin: 4px 0 0; font-size: 13px; color: #C9D6EE; }
+    .site-header .date { margin-left: auto; font-size: 12px; color: #C9D6EE; white-space: nowrap; }
+    .site-pattern { position: absolute; top: 0; right: 0; bottom: 0; width: 46%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M0 0H120V30H30V120H0Z' fill='%23234B9B' fill-opacity='.55'/%3E%3Cpath d='M30 30H120V60H60V120H30Z' fill='%230A2254' fill-opacity='.60'/%3E%3Cpath d='M60 60H120V90H90V120H60Z' fill='%23234B9B' fill-opacity='.38'/%3E%3C/svg%3E"); background-size: 120px 120px; background-position: right top;
+      -webkit-mask-image: linear-gradient(to left, #000 15%, transparent 95%); mask-image: linear-gradient(to left, #000 15%, transparent 95%); }
+    @media (max-width: 600px) {
+      .site-header { margin: -12px -12px 16px; }
+      .site-header-inner { padding: 14px 14px; gap: 12px; }
+      .site-logo { width: 44px; height: 44px; }
+      .site-header h1 { font-size: 18px; }
+      .site-header .org-sub { font-size: 13px; }
+      .site-header .date { display: none; }
+    }
+
+    .section-title::before { content: ''; flex: 0 0 4px; height: 18px; background: #0F2D69; border-radius: 2px; }
+    .section-title span { margin-left: 4px; }
+
+    .site-footer { margin-top: 32px; text-align: center; color: var(--text-muted); font-size: 12px; }
+    .site-footer-dots { height: 36px; margin-bottom: 10px; border-radius: 12px; background-color: #D9DEE8;
+      background-image: radial-gradient(circle, #0F2D69 3px, transparent 3.6px); background-size: 54px 36px; background-position: 27px 18px; }
+    .site-footer p { margin: 0 0 8px; }
+
+    /* ===== ТАБЛИЦА ЗАВЕРШЁННЫХ ПРОЕКТОВ ===== */
+    .res-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+    .res-scroll { overflow-x: auto; }
+    .res-table { width: 100%; min-width: 1180px; border-collapse: collapse; font-size: 13px; color: var(--text-main); }
+    .res-table th, .res-table td { border: 1px solid var(--border); padding: 12px 14px; vertical-align: top; text-align: left; line-height: 1.5; }
+    .res-table thead th { background: #E6ECF7; color: #0F2D69; text-align: center; vertical-align: middle; font-size: 12px; }
+    .res-table thead th small { display: block; margin-top: 6px; font-size: 10.5px; line-height: 1.35; color: var(--text-muted); text-transform: none; }
+    .res-table td.c-num { width: 44px; text-align: center; color: var(--text-muted); }
+    .res-table td.c-name { min-width: 190px; }
+    .res-table td.c-desc, .res-table td.c-meas { white-space: pre-line; }
+    .res-table td.c-meas { min-width: 280px; }
+    .res-table td.c-meas .m-title { display: block; margin-bottom: 4px; }
+    .res-table td.c-meas ul { margin: 0; padding-left: 18px; white-space: normal; }
+    .res-table td.c-meas li { margin: 0 0 4px; }
+    .res-table td.c-unit { text-align: center; white-space: nowrap; }
+    .res-table td.c-val { text-align: center; }
+    .res-table td.c-after { background: #DDF2EA; color: #006B45; }
+    .res-table tr.proj-first > td { border-top: 2px solid #C6C6C6; }
+    .res-table tbody tr:first-child > td { border-top: 1px solid var(--border); }
+
+    /* ===== БЛОК «СТАТУС» В РАСКРЫВАЮЩЕМСЯ СПИСКЕ ПРОЕКТА ===== */
+    .status-card { margin: 0 0 22px; background: #fff; border: 1px solid var(--border); border-left: 6px solid var(--st-accent, #234B9B);
+      border-radius: 12px; box-shadow: 0 2px 10px rgba(15,45,105,0.08); overflow: hidden; }
+    .status-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; padding: 14px 20px; background: var(--st-tint, #E6ECF7); border-bottom: 1px solid var(--border); }
+    .status-head h4 { margin: 0 8px 0 0; font-size: 19px; color: #0F2D69; letter-spacing: -0.2px; }
+    .status-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; background: #fff; border: 1px solid var(--border); font-size: 12px; color: #0F2D69; line-height: 1.4; }
+    .status-chip .ic { font-size: 13px; }
+    .status-date { margin-left: auto; font-size: 12px; color: var(--text-muted); }
+    .status-body { padding: 18px 22px 22px; }
+    .status-summary { margin: 0 0 18px; font-size: 15px; line-height: 1.65; color: #1A1A1A; max-width: 118ch; }
+    .status-text p { margin: 0 0 12px; font-size: 14px; line-height: 1.65; color: #1A1A1A; max-width: 118ch; }
+    .status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    @media (max-width: 900px) { .status-grid { grid-template-columns: 1fr; } }
+    .status-sec { background: #fff; border: 1px solid var(--border); border-top: 3px solid var(--sec); border-radius: 10px; padding: 14px 18px 8px; }
+    .status-sec h5 { margin: 0 0 12px; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--sec); }
+    .status-sec ul { margin: 0; padding: 0; list-style: none; }
+    .status-sec li { position: relative; margin: 0 0 11px; padding-left: 24px; font-size: 14px; line-height: 1.6; color: #1A1A1A; }
+    .status-sec li::before { content: var(--ico); position: absolute; left: 0; top: 0; color: var(--sec); font-size: 14px; }
+    .status-empty { color: var(--text-muted); font-size: 14px; font-style: italic; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <img class="site-logo" src="logo.png" alt="Высшая школа экономики" width="56" height="56" onerror="this.style.display='none'" />
+      <div class="site-titles">
+        <h1>Процессный офис НИУ ВШЭ</h1>
+        <p class="org-sub">Центр развития организационных процессов</p>
+        <p class="subtitle">Дашборд проектов и оптимизации процессов</p>
+      </div>
+    </div>
+    <div class="site-pattern" aria-hidden="true"></div>
+  </header>
+
+  
+  <!-- ЧАСТИ ДАШБОРДА -->
+  <div class="tabs" role="tablist" aria-label="Части дашборда">
+    <button class="tab-btn" id="tab-projects" role="tab" data-tab="projects" aria-controls="panel-projects" aria-selected="true">Проекты и статусы</button>
+    <button class="tab-btn" id="tab-scope" role="tab" data-tab="scope" aria-controls="panel-scope" aria-selected="false">Охват и направления</button>
+  </div>
+
+  <!-- ЧАСТЬ 1: ПРОЕКТЫ И СТАТУСЫ -->
+  <section class="tab-panel" id="panel-projects" role="tabpanel" aria-labelledby="tab-projects">
+    <h2 class="part-title">Проекты и статусы <span>таймлайн проектов и результаты завершённых проектов</span></h2>
+
+    <div class="timeline-container" style="margin: 16px 0;">
+      <div class="tl-legend">
+        <span><span class="tl-mark owner sm">!</span> Этап на стороне владельца процесса</span>
+        <span><span class="tl-mark joint sm">🤝</span> Совместная работа ПО и владельца</span>
+        <span><span class="star-icon" style="color:#009B64">★</span> Работа на стороне ПО</span>
+        <span><span class="tl-check sm">✓</span> Этап завершён</span>
+      </div>
+    </div>
+
+    <div class="section-title">Проекты в работе <span id="cnt-active"></span></div>
+    <div id="tl-table-active"></div>
+
+    <div class="section-title">Завершённые проекты <span id="cnt-done"></span></div>
+    <div id="tl-table-done"></div>
+
+    <!-- Экспорт -->
+  <div style="display:flex; justify-content:flex-end; gap:12px; margin-bottom: 24px;">
+    <button id="export-csv" style="padding:8px 16px; font-size:13px; border-radius:8px; cursor:pointer; border:1px solid var(--primary); background:var(--primary); color:#fff;">Экспорт CSV</button>
+    <button id="export-json" style="padding:8px 16px; font-size:13px; border-radius:8px; cursor:pointer; border:1px solid var(--border); background:#fff; color:var(--text-main);">Экспорт JSON</button>
+  </div>
+  </section>
+
+  <!-- ЧАСТЬ 2: ОХВАТ И НАПРАВЛЕНИЯ -->
+  <section class="tab-panel" id="panel-scope" role="tabpanel" aria-labelledby="tab-scope" hidden>
+    <h2 class="part-title">Охват и направления <span>показатели, направления деятельности и аналитика</span></h2>
+    <!-- ГЛОБАЛЬНЫЕ KPI -->
+  <div class="section-title">Охват <span>ключевые показатели</span></div>
+  <div class="kpi-grid" id="kpi-grid"></div>
+
+  <!-- НАПРАВЛЕНИЯ ДЕЯТЕЛЬНОСТИ -->
+  <div class="section-title">Направления деятельности</div>
+  <div class="dir-sections" id="directions"></div>
+
+  <!-- ГРАФИКИ -->
+  <div class="section-title">Аналитика</div>
+  <div class="charts-grid">
+    <div class="chart-card"><h3>Статусы проектов</h3><div class="chart-wrap"><canvas id="chart-status"></canvas></div></div>
+    <div class="chart-card"><h3>Этапы реализации проектов</h3><div class="chart-wrap"><canvas id="chart-stages"></canvas></div></div>
+  </div>
+  </section>
+
+  <script>
+    // Раскрытие строки по клику; клики внутри раскрытого блока и выделение текста строку не сворачивают
+    function toggleRow(ev, el) {
+      if (ev.target.closest('.tl-details-cell')) return;
+      const sel = window.getSelection && window.getSelection();
+      if (sel && !sel.isCollapsed && String(sel).trim() !== '') return;
+      el.classList.toggle('open');
+    }
+    let rawData = [];
+    let globalKpi = {};
+    let charts = {};
+
+    const DEPLOYED_STATUSES = ['завершён', 'завершен', 'внедрено', 'внедрён', 'внедрен'];
+    const isDeployedStatus = p => DEPLOYED_STATUSES.includes(String(p.status || '').trim().toLowerCase()) || p.current_stage === 'deployed';
+    function statusBadgeClass(status) {
+      const st = String(status || '').trim().toLowerCase();
+      if (st === 'в работе') return 'badge-wip';
+      if (st === 'на паузе') return 'badge-pause';
+      if (DEPLOYED_STATUSES.includes(st)) return 'badge-done';
+      return 'badge-other';
+    }
+
+    // Нормализация внедрения по кварталам: в одном квартале может быть несколько изменений с разными статусами
+    function qStatusOf(s) {
+      const t = String(s == null ? '' : s).trim().toLowerCase();
+      if (!t) return null;
+      if (DEPLOYED_STATUSES.includes(t)) return 'завершён';
+      return t;
+    }
+    function qChangeList(v, dflt) {
+      if (v == null || v === '') return [];
+      if (typeof v === 'string' || typeof v === 'number') return [{ text: String(v), status: qStatusOf(dflt) }];
+      if (Array.isArray(v)) return v.flatMap(e => qChangeList(e, dflt));
+      const st = v.status != null && v.status !== '' ? v.status : dflt;
+      const nested = Array.isArray(v.changes) ? v.changes : (Array.isArray(v.items) ? v.items : null);
+      if (nested) return qChangeList(nested, st);
+      const text = v.name || v.title || v.text || v.change || v.item || v.description || '';
+      return text ? [{ text: String(text), status: qStatusOf(st) }] : [];
+    }
+    function normQuarters(p) {
+      const src = (p.stages && p.stages.implementation && p.stages.implementation.quarters) || {};
+      const map = {};
+      if (Array.isArray(src)) {
+        src.forEach(e => {
+          if (!e || typeof e !== 'object') return;
+          const key = e.quarter || e.key || e.period;
+          if (!key) return;
+          (map[key] = map[key] || []).push(e);
+        });
+      } else Object.keys(src).forEach(key => { map[key] = src[key]; });
+      return Object.keys(map).sort().map(key => ({ key, changes: qChangeList(map[key]) }));
+    }
+    function qLabel(key) {
+      const m = String(key).match(/^(\d{4})[-_ ]?Q([1-4])$/i);
+      return m ? `Q${m[2]} ’${m[1].slice(2)}` : String(key);
+    }
+    function fmtDMY(v) {
+      const m = String(v == null ? '' : v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+      return m ? `${m[3]}.${m[2]}.${m[1]}` : (v ? String(v) : '—');
+    }
+    function syncTlVw() {
+      document.querySelectorAll('.tl-scroll').forEach(sc => {
+        const g = sc.querySelector('.tl-grid');
+        if (g && sc.clientWidth) g.style.setProperty('--tl-vw', sc.clientWidth + 'px');
+      });
+    }
+    window.addEventListener('resize', syncTlVw);
+
+    // Фирменный шрифт: класс brand-fonts включается, только если файлы шрифтов реально загрузились
+    (function () {
+      if (!document.fonts || !document.fonts.load) return;
+      Promise.all([document.fonts.load('400 16px Brand'), document.fonts.load('900 16px Brand')])
+        .then(r => { if (r.every(a => a && a.length && a.every(f => f.status === 'loaded'))) document.documentElement.classList.add('brand-fonts'); })
+        .catch(() => {});
+    })();
+
+    const STAGE_KEYS = ['analysis', 'current_state', 'target_state', 'decision', 'implementation'];
+    function projectStageKey(p) {
+      if (isDeployedStatus(p)) return 'deployed';
+      const st = p.stages || {};
+      const done = k => st[k] && st[k].status === 'завершён';
+      if (STAGE_KEYS.some(k => st[k] && st[k].status)) {
+        const cur = STAGE_KEYS.find(k => st[k] && st[k].status === 'в работе');
+        if (cur) return cur;
+        const todo = STAGE_KEYS.find(k => !done(k));
+        if (!todo) return 'implementation';
+        return (STAGE_KEYS.includes(p.current_stage) && !done(p.current_stage)) ? p.current_stage : todo;
+      }
+      return STAGE_KEYS.includes(p.current_stage) ? p.current_stage : 'analysis';
+    }
+
+    function esc(s) {
+      if (s == null) return '';
+      return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    // ============================================================
+    // РЕНДЕР ГЛОБАЛЬНЫХ KPI И НАПРАВЛЕНИЙ
+    // ============================================================
+    function renderGlobalKpis(kpi) {
+      const grid = document.getElementById('kpi-grid');
+      const num = x => (x == null ? '—' : esc(x));
+      const chips = arr => (Array.isArray(arr) && arr.length)
+        ? `<div class="chips">${arr.map(x => `<span class="chip">${esc(x)}</span>`).join('')}</div>`
+        : `<div class="value">—</div>`;
+      grid.innerHTML = `
+        <div class="kpi-card blue"><div class="label">Процессы в реестре</div><div class="value">${num(kpi.processes_total)}</div><div class="sub">охват процессов</div></div>
+        <div class="kpi-card"><div class="label">Подразделения</div><div class="value">${num(kpi.departments_count)}</div><div class="sub">вовлечено в работу</div></div>
+        <div class="kpi-card orange"><div class="label">Участники</div><div class="value">${num(kpi.people_count)}</div><div class="sub">человек задействовано</div></div>
+        <div class="kpi-card green"><div class="label">Количество проектов</div><div class="value">${num(kpi.projects_total)}</div><div class="sub">в работе и завершено</div></div>
+        <div class="kpi-card green k5"><div class="label">Кампусы</div>${chips(kpi.campuses)}<div class="sub">география проектов</div></div>
+        <div class="kpi-card blue k7"><div class="label">Перечень направлений</div>${chips(kpi.directions_list)}<div class="sub">направления, в которых мы работали</div></div>
+      `;
+    }
+
+    function renderDirections(kpi) {
+      const n = x => (x == null ? 0 : x);
+      const stat = (cls, icon, label, val, note) =>
+        `<div class="dir-card ${cls}"><div class="dir-icon">${icon}</div><div class="dir-content"><h4>${label}</h4><div class="val">${esc(n(val))}</div><p>${note}</p></div></div>`;
+      const art = (val, label) => `<div class="artifact-card"><div class="val">${esc(n(val))}</div><h4>${label}</h4></div>`;
+      const head = (cls, icon, title, desc) =>
+        `<div class="dir-head ${cls}"><div class="dir-icon">${icon}</div><div><h3>${title}</h3><p>${desc}</p></div></div>`;
+
+      document.getElementById('directions').innerHTML = `
+        <section class="dir-block wide">
+          ${head('', '📊', 'Проекты по оптимизации процессов', 'Комплексная работа по улучшению процессов (включая обеспечивающие)')}
+          <div class="optimization-layout">
+            <div class="opt-left">
+              <div class="dir-sub-title">Портфель проектов</div>
+              <div class="opt-totals">
+                <div class="opt-total-card"><div class="dir-icon">📊</div><div class="dir-content"><h4>Всего проектов</h4><div class="val">${esc(n(kpi.projects_total))}</div><p>в работе и завершено</p></div></div>
+              </div>
+            </div>
+            <div class="opt-artifacts">
+              <div class="dir-sub-title">Разработанные артефакты и результаты</div>
+              <div class="artifacts-grid">
+                ${art(kpi.interviews_count, 'Глубинных интервью')}
+                ${art(kpi.bpmn_count, 'Схем BPMN')}
+                ${art(kpi.cjm_count, 'Карт CJM')}
+                ${art(kpi.tz_digital_count, 'ТЗ для цифровых решений')}
+                ${art(kpi.problems_count, 'Выявлено проблем')}
+                ${art(kpi.proposals_count, 'Предложений по решению')}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="dir-block">
+          ${head('indigo', '🎯', 'Стратсессии', 'Стратегические сессии с вовлечением сотрудников')}
+          <div class="dir-cards-grid">
+            ${stat('', '🎯', 'Проведено сессий', kpi.strategy_sessions, 'стратегических встреч')}
+            ${stat('', '👥', 'Участники', kpi.strategy_people, 'человек приняло участие')}
+          </div>
+        </section>
+
+        <section class="dir-block s4">
+          ${head('green', '💻', 'Цифровые сервисы', 'Разработка и внедрение IT-решений и сервисов')}
+          <div class="dir-cards-grid">
+            ${stat('green', '💻', 'Разработано сервисов', kpi.digital_services, 'с нуля')}
+            ${stat('green', '🔧', 'Внесение изменений в сервисы ЕЛК', kpi.elk_services_changed, 'количество изменённых сервисов')}
+          </div>
+        </section>
+
+        <section class="dir-block s4">
+          ${head('orange', '📄', 'Работа с ЛНА', 'Локальные нормативные акты и регламентирующие документы')}
+          <div class="dir-cards-grid">
+            ${stat('orange', '📑', 'Регламентирующие документы', kpi.regulatory_docs, 'разработано, актуализировано и верифицировано')}
+            ${stat('orange', '📄', 'ЛНА, прошедшие верификацию', kpi.lnas_verified, 'на человекоцентричность')}
+          </div>
+        </section>
+
+        <section class="dir-block">
+          ${head('rose', '🎓', 'Проведённое обучение', 'Развитие персонала')}
+          <div class="dir-cards-grid">
+            ${stat('rose', '🎓', 'Обучено сотрудников', kpi.trained_employees, '&nbsp;')}
+            ${stat('rose', '🏅', 'Обучено сотрудников в рамках ДПО', kpi.trained_dpo, 'по программам ДПО')}
+          </div>
+        </section>
+
+        <section class="dir-block s3">
+          ${head('indigo', '📜', 'Зарегистрированные РИД', 'Результаты интеллектуальной деятельности')}
+          <div class="dir-cards-grid">
+            ${stat('', '📜', 'Количество зарегистрированных РИД', kpi.rid_registered, 'результатов интеллектуальной деятельности')}
+          </div>
+        </section>
+
+        <section class="dir-block s3">
+          ${head('green', '📘', 'Методологии', 'Разработка методических подходов')}
+          <div class="dir-cards-grid">
+            ${stat('green', '📘', 'Количество созданных методологий', kpi.methodologies_created, 'методологий создано')}
+          </div>
+        </section>
+      `;
+    }
+
+    // ============================================================
+    // РЕНДЕР ГРАФИКОВ
+    // ============================================================
+    function renderCharts(data) {
+      Object.values(charts).forEach(c => c.destroy());
+      charts = {};
+      const pageFont = getComputedStyle(document.body).fontFamily;
+      Chart.defaults.font.family = pageFont;
+      const commonLegend = { position: 'bottom', labels: { font: { size: 12 }, usePointStyle: true, boxWidth: 8 } };
+      const names = list => list.map(n => '• ' + n);
+
+      const STATUSES = [
+        { key: 'в работе', label: 'В работе', color: '#234B9B', text: '#FFFFFF' },
+        { key: 'на паузе', label: 'На паузе', color: '#FAB900', text: '#0F2D69' },
+        { key: 'завершён', label: 'Завершён', color: '#009B64', text: '#FFFFFF' }
+      ];
+      const known = STATUSES.map(x => x.key);
+      const norm = p => {
+        const st = String(p.status || '').trim().toLowerCase();
+        return DEPLOYED_STATUSES.includes(st) ? 'завершён' : st;
+      };
+      const groups = data.some(p => !known.includes(norm(p)))
+        ? [...STATUSES, { key: '__other', label: 'Другое', color: '#929292', text: '#FFFFFF' }] : STATUSES;
+      const byStatus = groups.map(() => []);
+      data.forEach(p => {
+        let gi = groups.findIndex(g => g.key === norm(p));
+        if (gi === -1) gi = groups.length - 1;
+        byStatus[gi].push(p.name);
+      });
+
+      const percentLabels = {
+        id: 'percentLabels',
+        afterDatasetsDraw(chart) {
+          const ds = chart.data.datasets[0].data;
+          const total = ds.reduce((a, b) => a + b, 0);
+          if (!total) return;
+          const { ctx } = chart;
+          const arcs = chart.getDatasetMeta(0).data;
+          ctx.save();
+          ctx.font = '900 13px ' + pageFont;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          arcs.forEach((arc, i) => {
+            if (!ds[i]) return;
+            const pct = Math.round(ds[i] / total * 100);
+            const pos = arc.getCenterPoint();
+            ctx.fillStyle = groups[i].text;
+            ctx.fillText(pct + '%', pos.x, pos.y);
+          });
+          ctx.restore();
+        }
+      };
+
+      charts.status = new Chart(document.getElementById('chart-status'), {
+        type: 'doughnut',
+        data: { labels: groups.map(g => g.label), datasets: [{ data: byStatus.map(a => a.length), backgroundColor: groups.map(g => g.color), borderWidth: 0 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '62%',
+          plugins: {
+            legend: commonLegend,
+            tooltip: { callbacks: { afterBody: items => names(byStatus[items[0].dataIndex]) } }
+          }
+        },
+        plugins: [percentLabels]
+      });
+
+      const STAGES = [['analysis', 'Анализ'], ['current_state', 'Текущее'], ['target_state', 'Целевое'], ['decision', 'Решение'], ['implementation', 'Внедрение'], ['deployed', 'Завершён']];
+      const byStage = STAGES.map(() => []);
+      data.forEach(p => { byStage[STAGES.findIndex(x => x[0] === projectStageKey(p))].push(p.name); });
+      charts.stages = new Chart(document.getElementById('chart-stages'), {
+        type: 'bar',
+        data: { labels: STAGES.map(x => x[1]), datasets: [{ label: 'Проектов на этапе', data: byStage.map(a => a.length), backgroundColor: '#234B9B', borderRadius: 6, maxBarThickness: 56 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { afterBody: items => names(byStage[items[0].dataIndex]) } }
+          },
+          scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+    }
+
+    // ============================================================
+    // РЕНДЕР ТАЙМЛАЙНА (ТОЛЬКО ЭТАПЫ)
+    // ============================================================
+    function renderTimelineTable(data, key, emptyText) {
+      const container = document.getElementById('timeline-body-' + key);
+      if (!container) return;
+      if (!data.length) {
+        container.innerHTML = '<div style="grid-column: 1/-1; padding:32px; text-align:center; color:#929292;">' + esc(emptyText) + '</div>';
+        return;
+      }
+
+      const stageKeys = ['analysis', 'current_state', 'target_state', 'decision', 'implementation'];
+      const COLS = stageKeys.length + 1; // + финальный столбец «Завершён»
+      const isDeployed = p => isDeployedStatus(p);
+
+      const YEARS = TL_YEARS;
+      const SLOTS = YEARS.length * 4;
+      const slotOf = k => {
+        const m = String(k).match(/^(\d{4})[-_ ]?Q([1-4])$/i);
+        if (!m) return -1;
+        const i = (+m[1] - YEARS[0]) * 4 + (+m[2] - 1);
+        return i >= 0 && i < SLOTS ? i : -1;
+      };
+
+      function getStageStates(p) {
+        if (isDeployed(p)) return [...stageKeys.map(() => 'done'), 'deployed'];
+        const st = p.stages || {};
+        const states = stageKeys.map(k => {
+          const s = st[k] && st[k].status;
+          if (s === 'завершён') return 'done';
+          if (s === 'в работе') return 'current';
+          return 'todo';
+        });
+        if (!stageKeys.some(k => st[k] && st[k].status)) {
+          const idx = stageKeys.indexOf(p.current_stage);
+          states.forEach((_, i) => { states[i] = idx === -1 ? 'todo' : (i < idx ? 'done' : (i === idx ? 'current' : 'todo')); });
+        } else if (!states.includes('current') && states.includes('todo')) {
+          let idx = stageKeys.indexOf(p.current_stage);
+          if (idx === -1 || states[idx] === 'done') idx = states.indexOf('todo');
+          states[idx] = 'current';
+        }
+        states.push('todo');
+        return states;
+      }
+
+      const QMARK = { done: '✓', current: '★', todo: '○' };
+      function mapQStatus(s) {
+        if (s === 'завершён') return 'done';
+        if (s === 'в работе') return 'current';
+        if (s) return 'todo';
+        return null;
+      }
+      function getQuarters(p, implState) {
+        const list = normQuarters(p).map(q => {
+          const ch = q.changes.map(c => ({ text: c.text, status: mapQStatus(c.status) }));
+          const sts = ch.map(c => c.status).filter(Boolean);
+          const status = sts.includes('current') ? 'current' : (sts.includes('todo') ? 'todo' : (sts.length ? 'done' : null));
+          return { key: q.key, label: qLabel(q.key), items: ch.map(c => c.text), changes: ch, status };
+        });
+        if (!list.length) return list;
+        if (isDeployed(p)) { list.forEach(x => { x.status = 'done'; x.changes.forEach(c => { c.status = 'done'; }); }); return list; }
+        list.forEach((x, i) => {
+          if (!x.status) x.status = (implState === 'current' && i === list.length - 1) ? 'current' : 'done';
+          x.changes.forEach(c => { if (!c.status) c.status = x.status; });
+        });
+        if (implState === 'current' && !list.some(x => x.status === 'current')) {
+          const t = list.find(x => x.status === 'todo');
+          (t || list[list.length - 1]).status = 'current';
+        }
+        return list;
+      }
+
+      container.innerHTML = data.map(p => {
+        const states = getStageStates(p);
+        const role = ['owner', 'joint', 'po'].includes(p.stage_role) ? p.stage_role : 'po';
+        const marker = roleMarker(role);
+        const doneMark = (title) => `<div class="tl-check sm" title="${title}">✓</div>`;
+        const dot = c => `<div class="tl-dot ${c}"></div>`;
+
+        const endCol = states[COLS - 1] === 'deployed' ? COLS - 1 : states.indexOf('current');
+
+        let starSeen = false;
+        let cellsHtml = '';
+        for (let i = 0; i < COLS; i++) {
+          const state = states[i];
+          let inner = '';
+          let endPct = 50;
+          if (state === 'deployed') {
+            inner = `<div class="tl-check" title="Завершён">✓</div>`;
+          } else if (i === 4) {
+            const qs = getQuarters(p, state);
+            if (starSeen) {
+              inner = '';
+            } else if (qs.length) {
+              const slots = Array(SLOTS).fill(null);
+              qs.forEach(x => { const si = slotOf(x.key); if (si >= 0) slots[si] = x; });
+              let starSlot = -1;
+              slots.forEach((x, si) => { if (x && x.status === 'current') starSlot = si; });
+              if (starSlot >= 0) endPct = (starSlot + 0.5) / SLOTS * 100;
+              inner = `<div class="tl-q-wrap">` + slots.map((x, si) => {
+                const cls = 'tl-q' + (si > 0 && si % 4 === 0 ? ' ys' : '');
+                if (!x || (starSlot >= 0 && si > starSlot)) return `<div class="${cls}"></div>`;
+                const mk = x.status === 'current' ? marker : (x.status === 'done' ? doneMark('Этап завершён') : dot('planned'));
+                const note = x.items.join(', ');
+                const tip = x.changes.map(c => (QMARK[c.status] || '✓') + ' ' + c.text).join('; ');
+                return `<div class="${cls}" title="${esc(x.label + (tip ? ': ' + tip : ''))}">${mk}${note ? `<div class="tl-q-label">${esc(note)}</div>` : ''}</div>`;
+              }).join('') + `</div>`;
+              if (state === 'current') starSeen = true;
+            } else if (state === 'current') {
+              inner = marker; starSeen = true;
+            } else {
+              inner = state === 'done' ? doneMark('Этап завершён') : dot('');
+            }
+          } else if (starSeen) {
+            inner = '';
+          } else if (state === 'current') {
+            inner = marker; starSeen = true;
+          } else {
+            inner = state === 'done' ? doneMark('Этап завершён') : dot('');
+          }
+
+          let lineHtml = '';
+          if (endCol >= 0) {
+            if (i < endCol) lineHtml = '<div class="tl-line" style="width:100%"></div>';
+            else if (i === endCol) lineHtml = `<div class="tl-line" style="width:${endPct}%"></div>`;
+          }
+          cellsHtml += `
+            <div class="tl-track-cell${i === COLS - 1 ? ' last' : ''}">
+              ${lineHtml}
+              ${inner}
+            </div>
+          `;
+        }
+
+        return `
+          <div class="tl-row-wrapper" onclick="toggleRow(event, this)">
+            <div class="tl-name-cell"><div class="tl-name-wrap"><span>${esc(p.name)}</span><span class="badge ${statusBadgeClass(p.status)}">${esc(p.status)}</span></div></div>
+            <div class="tl-desc-cell"><span title="${esc(p.description || '')}">${p.description ? esc(p.description) : '—'}</span></div>
+            ${cellsHtml}
+            <div class="tl-details-cell">
+              <div class="details-container">
+                ${statusBlock(p)}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                  <div class="info-list">
+                    <div class="info-item"><strong>Владелец:</strong> ${esc(p.owner)}</div>
+                    <div class="info-item"><strong>Участники:</strong> ${esc((p.participants || []).join(', '))}</div>
+                    <div class="info-item"><strong>Пользователи:</strong> ${esc((p.users || []).join(', '))}</div>
+                    ${(Array.isArray(p.metrics) ? p.metrics.length : p.metrics) ? `<div class="info-item"><strong>Направлен на метрики:</strong> ${esc(Array.isArray(p.metrics) ? p.metrics.join(', ') : p.metrics)}</div>` : ''}
+                    <div class="info-item"><strong>Дата начала:</strong> ${esc(fmtDMY(p.start))}</div>
+                    <div class="info-item"><strong>Дата окончания:</strong> ${esc(fmtDMY(p.end))}</div>
+                    ${p.description ? `<div class="info-item"><strong>Описание:</strong> ${esc(p.description)}</div>` : ''}
+                  </div>
+                  <div>
+                    <div style="font-weight:600; margin-bottom:12px; font-size:14px;">Внедрение по кварталам</div>
+                    ${(() => {
+                      const qs = getQuarters(p, states[4]);
+                      if (!qs.length) return '<div style="color:var(--text-muted); font-size:13px;">Данные по кварталам пока отсутствуют</div>';
+                      const mark = { done: '✓', current: '★', todo: '○' };
+                      return qs.map(x => x.changes.length > 1
+                        ? `<div class="q-item"><strong>${esc(x.label)}:</strong>${x.changes.map(c => `<div style="margin-left:12px;"><strong>${mark[c.status] || '✓'}</strong> <span>${esc(c.text)}</span></div>`).join('')}</div>`
+                        : `<div class="q-item"><strong>${mark[x.status] || '✓'} ${esc(x.label)}:</strong> <span>${esc(x.items.join(', ') || '—')}</span></div>`).join('');
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+
+    function roleMarker(role) {
+      if (role === 'owner') return '<div class="tl-mark owner" title="Этап на стороне владельца процесса">!</div>';
+      if (role === 'joint') return '<div class="tl-mark joint" title="Совместная работа ПО и владельца">🤝</div>';
+      return '<div class="tl-star po" title="Работа на стороне ПО">★</div>';
+    }
+    let TL_YEARS = [2024, 2025, 2026];
+
+    const STAGE_NAMES = { analysis: 'Анализ', current_state: 'Текущее состояние', target_state: 'Целевое состояние',
+      decision: 'Принятие решения', implementation: 'Внедрение изменений', deployed: 'Завершён' };
+    const ROLE_CHIPS = { owner: ['!', 'На стороне владельца процесса'], joint: ['🤝', 'Совместная работа ПО и владельца'], po: ['★', 'Работа на стороне ПО'] };
+    function statusBlock(p) {
+      const r = p.status_report || {};
+      const st = String(p.status || '').trim().toLowerCase();
+      const palette = st === 'в работе' ? ['#234B9B', '#E6ECF7'] : st === 'на паузе' ? ['#FAB900', '#FFF1C2']
+        : DEPLOYED_STATUSES.includes(st) ? ['#009B64', '#DDF2EA'] : ['#929292', '#EDEDED'];
+      const role = ['owner', 'joint', 'po'].includes(p.stage_role) ? p.stage_role : 'po';
+      const stage = STAGE_NAMES[projectStageKey(p)] || '';
+      const sec = (title, ico, color, arr) => (Array.isArray(arr) && arr.length)
+        ? `<section class="status-sec" style="--sec:${color}; --ico:'${ico}'"><h5>${title}</h5><ul>${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ul></section>` : '';
+      const sections = [
+        sec('Что сделано', '✓', '#009B64', r.done),
+        sec('Что делается сейчас', '▸', '#234B9B', r.in_progress),
+        sec('Проблемы и риски', '!', '#E61E3C', r.issues),
+        sec('Ближайшие шаги', '→', '#0F2D69', r.next)
+      ].join('');
+      const paragraphs = String(r.text || '').split(/\n{2,}/).map(t => t.trim()).filter(Boolean)
+        .map(t => `<p>${esc(t).replace(/\n/g, '<br>')}</p>`).join('');
+      const body = (r.summary ? `<p class="status-summary">${esc(r.summary)}</p>` : '')
+        + (paragraphs ? `<div class="status-text">${paragraphs}</div>` : '')
+        + (sections ? `<div class="status-grid">${sections}</div>` : '');
+      return `<div class="status-card" style="--st-accent:${palette[0]}; --st-tint:${palette[1]}">
+        <div class="status-head">
+          <h4>Статус</h4>
+          ${stage ? `<span class="status-chip"><span class="ic">📍</span>Этап: ${esc(stage)}</span>` : ''}
+          <span class="status-chip"><span class="ic">${ROLE_CHIPS[role][0]}</span>${ROLE_CHIPS[role][1]}</span>
+          ${r.updated ? `<span class="status-date">Актуально на ${esc(fmtDMY(r.updated))}</span>` : ''}
+        </div>
+        <div class="status-body">${body || '<div class="status-empty">Статус по проекту пока не заполнен.</div>'}</div>
+      </div>`;
+    }
+
+    function tlSkeleton(key) {
+      const years = TL_YEARS.map(y =>
+        `<div class="impl-yr"><b>${y}</b><div class="impl-qs"><span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span></div></div>`).join('');
+      return `<div class="timeline-container">
+        <div class="tl-scroll" id="tl-scroll-${key}">
+          <div class="tl-grid" id="tl-grid-${key}" style="--yrs:${TL_YEARS.length}">
+            <div class="tl-header-cell title">Название проекта</div>
+            <div class="tl-header-cell"><h4>Краткое описание</h4></div>
+            <div class="tl-header-cell"><h4>Анализ</h4><p>ЛНА, интервью, CJM</p></div>
+            <div class="tl-header-cell"><h4>Текущее состояние</h4><p>Проблематика, первопричины</p></div>
+            <div class="tl-header-cell"><h4>Целевое состояние</h4><p>Предложения, план</p></div>
+            <div class="tl-header-cell"><h4>Принятие решения</h4><p>Владельцем</p></div>
+            <div class="tl-header-cell impl-head"><h4>Внедрение изменений</h4><div class="impl-years">${years}</div></div>
+            <div class="tl-header-cell"><h4>Завершён</h4><p>Результат в эксплуатации</p></div>
+            <div id="timeline-body-${key}" style="display: contents;"></div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function renderResultsTable(list) {
+      const host = document.getElementById('tl-table-done');
+      if (!list.length) {
+        host.innerHTML = '<div class="res-card"><div style="padding:32px; text-align:center; color:#929292;">Завершённых проектов пока нет</div></div>';
+        return;
+      }
+      const val = v => (v == null || v === '' ? '—' : esc(v));
+      const rows = list.map((p, idx) => {
+        const r = p.result || {};
+        const inds = (Array.isArray(r.indicators) && r.indicators.length) ? r.indicators : [{}];
+        const k = inds.length;
+        let measures;
+        if (Array.isArray(r.measures) && r.measures.length) {
+          measures = (r.measures_title ? `<span class="m-title">${esc(r.measures_title)}</span>` : '') +
+            '<ul>' + r.measures.map(m => `<li>${esc(m)}</li>`).join('') + '</ul>';
+        } else {
+          measures = val(r.measures);
+        }
+        return inds.map((ind, i) => {
+          const first = i === 0;
+          return `<tr class="${first ? 'proj-first' : ''}">` +
+            (first ? `<td class="c-num" rowspan="${k}">${idx + 1}</td>
+              <td class="c-name" rowspan="${k}">${esc(p.name)}</td>
+              <td class="c-desc" rowspan="${k}">${val(r.description_before || p.description)}</td>` : '') +
+            `<td>${val(ind.name)}</td><td class="c-unit">${val(ind.unit)}</td><td class="c-val">${val(ind.before)}</td><td class="c-val c-after">${val(ind.after)}</td>` +
+            (first ? `<td class="c-meas" rowspan="${k}">${measures}</td>` : '') +
+            '</tr>';
+        }).join('');
+      }).join('');
+      host.innerHTML = `<div class="res-card"><div class="res-scroll"><table class="res-table">
+        <thead>
+          <tr>
+            <th rowspan="2">№</th>
+            <th rowspan="2">Наименование проекта</th>
+            <th rowspan="2">Описание процесса до применения оптимизации</th>
+            <th colspan="4">Целевой показатель<small>(уровень удовлетворённости пользователей, уровень цифровизации, длительность, кол-во избыточных документов, кол-во лишних согласований, минимизация или формирование регламентов/инструкций)</small></th>
+            <th rowspan="2">Мероприятия по изменению процесса</th>
+          </tr>
+          <tr>
+            <th>Наименование</th><th>Ед. измерения</th><th>Значение до оптимизации</th><th>Значение после оптимизации</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table></div></div>`;
+    }
+
+    function renderTimeline(data) {
+      const years = data.flatMap(p => normQuarters(p).map(q => { const m = String(q.key).match(/^(\d{4})/); return m ? +m[1] : null; }).filter(Boolean));
+      const minY = Math.min(2024, ...years), maxY = Math.max(2026, ...years);
+      TL_YEARS = []; for (let y = minY; y <= maxY; y++) TL_YEARS.push(y);
+
+      const active = data.filter(p => !isDeployedStatus(p));
+      const done = data.filter(p => isDeployedStatus(p));
+      document.getElementById('tl-table-active').innerHTML = tlSkeleton('active');
+      document.getElementById('cnt-active').textContent = active.length;
+      document.getElementById('cnt-done').textContent = done.length;
+      renderTimelineTable(active, 'active', 'Нет проектов в работе');
+      renderResultsTable(done);
+      syncTlVw();
+    }
+
+    // ============================================================
+    // ЗАГРУЗКА
+    // ============================================================
+    fetch('./data_test.json')
+      .then(res => { if (!res.ok) throw new Error('Ошибка загрузки'); return res.json(); })
+      .then(json => (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(() => json))
+      .then(json => {
+        globalKpi = json.kpi || {};
+        rawData = json.projects || [];
+        
+        renderGlobalKpis(globalKpi);
+        renderDirections(globalKpi);
+        renderCharts(rawData);
+        renderTimeline(rawData);
+      })
+      .catch(err => {
+        console.error(err);
+        document.body.innerHTML = `<div style="padding:40px; text-align:center; color:#E61E3C;"><h2>Ошибка загрузки</h2><p>Проверьте data_test.json</p></div>`;
+      });
+
+    // Экспорт
+    document.getElementById('export-csv').addEventListener('click', () => {
+      const headers = ['ID', 'Название', 'Направление', 'Владелец', 'Статус', 'Начало', 'Окончание'];
+      const rows = rawData.map(p => [p.id, p.name, p.direction, p.owner, p.status, p.start, p.end].map(v => `"${String(v||'').replace(/"/g, '""')}"`).join(';'));
+      const csv = '\uFEFF' + [headers.join(';'), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'projects.csv'; a.click();
+    });
+
+    document.getElementById('export-json').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(rawData, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'projects.json'; a.click();
+    });
+  
+    // ============================================================
+    // ВКЛАДКИ: «Проекты и статусы» / «Охват и направления»
+    // ============================================================
+    (function () {
+      const tabs = [...document.querySelectorAll('.tab-btn')];
+      const ids = tabs.map(t => t.dataset.tab);
+      function show(id, store) {
+        if (!ids.includes(id)) id = ids[0];
+        tabs.forEach(t => { const on = t.dataset.tab === id; t.classList.toggle('active', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); });
+        document.querySelectorAll('.tab-panel').forEach(p => { p.hidden = p.id !== 'panel-' + id; });
+        if (store && history.replaceState) history.replaceState(null, '', '#' + id);
+        requestAnimationFrame(() => { Object.values(charts).forEach(c => c.resize()); syncTlVw(); });
+      }
+      tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab, true)));
+      window.addEventListener('hashchange', () => show(location.hash.replace('#', ''), false));
+      show(location.hash.replace('#', ''), false);
+    })();
+  </script>
+</body>
+</html>
