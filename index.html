@@ -917,7 +917,7 @@
       if (role === 'joint') return '<div class="tl-mark joint" title="Совместная работа ПО и владельца">🤝</div>';
       return '<div class="tl-star po" title="Работа на стороне ПО">★</div>';
     }
-    let TL_YEARS = [2024, 2025, 2026];
+    let TL_YEARS = [2026, 2027];
 
     const STAGE_NAMES = { analysis: 'Анализ', current_state: 'Текущее состояние', target_state: 'Целевое состояние',
       decision: 'Принятие решения', implementation: 'Внедрение изменений', deployed: 'Завершён' };
@@ -1025,7 +1025,7 @@
     function renderTimeline(data) {
       const years = data.flatMap(p => Object.keys((p.stages && p.stages.implementation && p.stages.implementation.quarters) || {})
         .map(k => { const m = String(k).match(/^(\d{4})/); return m ? +m[1] : null; }).filter(Boolean));
-      const minY = Math.min(2024, ...years), maxY = Math.max(2026, ...years);
+      const minY = Math.min(2026, ...years), maxY = Math.max(2027, ...years);
       TL_YEARS = []; for (let y = minY; y <= maxY; y++) TL_YEARS.push(y);
 
       const active = data.filter(p => !isDeployedStatus(p));
